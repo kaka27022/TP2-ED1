@@ -157,7 +157,7 @@ void designaCoordenadas(Labirinto* labirinto, Percurso* percurso, Posicao* posic
         }
 
         /*Coloca as coordenadas ate a saida na TAD percurso*/
-        if(labirinto->lab[i][j] == '.') {
+        if(labirinto->lab[i][j] == 'o') {
           for(int k = 0; k < percurso->tamanho; k++){
             if(percurso->posicao_saida[k]->x == -1 && percurso->posicao_saida[k]->y == -1){
               percurso->posicao_saida[k]->x = i;
@@ -185,19 +185,20 @@ void printCoordenadas(Percurso* percurso){
 int acharSaida(Labirinto* labirinto, Posicao* posicao){
   int x = posicao->x;
   int y = posicao->y;  
+  
   // Verifica se está fora dos limites do labirinto ou encontrou um obstáculo
-  if(x < 0 || x >= labirinto->lins || y < 0 || y >= labirinto->cols || labirinto->lab[x][y] == '*' || labirinto->lab[x][y] == '.' || labirinto->lab[x][y] == '#'){
+  if(x < 0 || x >= labirinto->lins || y < 0 || y >= labirinto->cols || labirinto->lab[x][y] == '*' || labirinto->lab[x][y] == 'o' || labirinto->lab[x][y] == '#'){
     return 0;
   }
 
   // Verifica se chegou a uma borda do labirinto
   if(x == 0 || x == labirinto->lins - 1 || y == 0 || y == labirinto->cols - 1){
-    labirinto->lab[x][y] = '.';
+    labirinto->lab[x][y] = 'o';
     return 1;
   }
 
   // Marca a posicao atual como visitada
-  labirinto->lab[x][y] = '.';
+  labirinto->lab[x][y] = 'o';
 
   /*Foi necessario alocar uma variavel auxiliar, para mudar os valores de x e y e
   passar de parametro na recursao*/
@@ -238,10 +239,13 @@ int acharSaida(Labirinto* labirinto, Posicao* posicao){
   }
 
   // Marca atual posicao como nao visitada (backtracking)
-  labirinto->lab[x][y] = ' ';
+  if(!acharSaida(labirinto, posicao)){
+    labirinto->lab[x][y] = ' ';
+  }
 
   //Desaloca geral a variavel
   desalocarPosicao(&nova_posicao);
+
   return 0;
   
 }
@@ -251,12 +255,12 @@ void passosAteSaida(Percurso* percurso){
   /*Atraves de testes, foi possivel perceber que o contador de passos retorna negativo 
   quando o labirinto nao tiver saida, com isso, foi feito uma condicao para saber se o 
   labirinto tem resultado*/
-  if(percurso->tamanho < 0){
-    printf("EPIC FAIL!\n"); 
-    return;
-  } else {
-    printf("Numero de passos:%d\n", percurso->tamanho);
-  }
+  //if(percurso->tamanho < 0){
+    //printf("EPIC FAIL!\n"); 
+    //return;
+  //} else {
+    printf("%d", percurso->tamanho);
+  //}
 }
 
 // Funcao para desalocar memoria do TAD labirinto

@@ -41,11 +41,11 @@ int main(void) {
           acharSaida(labirinto, posicao);
           percurso = alocarPercurso(labirinto, x, y);
           passosAteSaida(percurso);
-          int aux = contador(labirinto);
-          if(aux > 0){
-            printf("Caminho da saida:\n");
+          //int aux = contador(labirinto);
+          //if(aux > 0){
+            printf("\n");
             printLabirinto(labirinto, posicao);
-          }
+          //}
         break;
 
         // Imprime as coordenadas ate o destinho;
@@ -64,9 +64,9 @@ int main(void) {
         case 'f':
           leLabirinto(labirinto);
           acharSaida_f(labirinto, fila);
-          int cont = contador(labirinto);
+          int cont = contador_f(labirinto);
           if(cont > 0){
-            printf("\nNumero de passos: %d\n", cont);
+            printf("\n%d\n", cont);
             printLabirinto_f(labirinto);
           }
         break;
@@ -74,6 +74,7 @@ int main(void) {
   
   //Desaloca TADs
   desalocarLabirinto(&labirinto);
+  //Percurso e Posicao sao usados apenas na opcao r
   if(opcao == 'r'){
     desalocarPercurso(&percurso);
     desalocarPosicao(&posicao);

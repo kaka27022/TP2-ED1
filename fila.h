@@ -23,5 +23,6 @@ typedef struct {
 
 bool acharSaida_f(Labirinto* , Fila);
 void printLabirinto_f(Labirinto*);
+int contador_f(Labirinto*);
 
 #endif //FILA_H

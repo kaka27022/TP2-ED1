@@ -77,7 +77,7 @@ void marcarCaminho(Labirinto* labirinto, Coordenadas* caminho, int tamanhoCaminh
 
     char** lab = labirinto->lab;
 
-    for(int i = 0; i < tamanhoCaminho; i++){
+    for(int i = 0; i < tamanhoCaminho-1; i++){
         int row = caminho[i].x;
         int col = caminho[i].y;
         lab[row][col] = 'o';
@@ -131,11 +131,11 @@ bool acharSaida_f(Labirinto* labirinto, Fila fila) {
         }
 
         Coordenadas vizinhos[4] = {
-            {row, col + 1},   // Direita
-            {row - 1, col},   // Cima
-            {row, col - 1},   // Esquerda
-            {row + 1, col}    // Baixo
-          
+            {row, col + 1},    // Direita
+            {row + 1, col},    // Baixo
+            {row, col - 1},    // Esquerda
+            {row - 1, col}     // Cima
+
         };
 
         for(int i = 0; i < 4; i++){
@@ -145,13 +145,15 @@ bool acharSaida_f(Labirinto* labirinto, Fila fila) {
             if(coordenadaEhValida(novaLinha, novaColuna, lins, cols) && !visitado[novaLinha][novaColuna] && caminhoVazio(lab, novaLinha, novaColuna)){
                 visitado[novaLinha][novaColuna] = true;
                 Coordenadas novaCoordenada = {novaLinha, novaColuna};
+                caminho[tamanhoCaminho] = novaCoordenada;
                 inserirFila(&fila, novaCoordenada);
-                caminho[tamanhoCaminho++] = novaCoordenada;
+                tamanhoCaminho++;
             }
         }
     }
 
-    printf("EPIC FAIL!!\n");
+    marcarCaminho(labirinto, caminho, tamanhoCaminho);
+
     return false;
 
 }
@@ -164,6 +166,23 @@ void printLabirinto_f(Labirinto *labirinto) {
     }
     printf("\n");
   }
+}
+
+// Funcao que retorna a quantidade de passos ate o final do labirinto
+int contador_f(Labirinto* labirinto){
+
+    int contador = 0;
+
+    /*Percorre o labirinto resolvido e conta onde entao os pontilhados, 
+    caminho para a saida*/
+    for(int i = 0; i < labirinto->lins; i++){
+        for(int j = 0; j < labirinto->cols; j++){
+            if(labirinto->lab[i][j] == 'o'){
+                contador++;
+            }        
+        }
+    }
+    return contador;
 }
 
 
