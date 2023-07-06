@@ -47,57 +47,68 @@ int caminhoValido(Labirinto *labirinto, int lins, int cols) {
     return (labirinto->lab[lins][cols] == ' ');
 }
 
-int acharSaidaPilha(Pilha *pilha, Labirinto *labirinto) {
+int acharSaidaPilha(Labirinto *labirinto) {
     int flag = 0;
+    Pilha *pilha = (Pilha*) malloc(sizeof(Pilha));
+    iniciaPilha(pilha);
     Posicao pos = primeiraPosicao(labirinto);
-    int visitado[labirinto->lins][labirinto->cols];
-    
-    pilhaPush(pilha, pos);
 
+    labirinto->visitado = malloc(labirinto->lins * sizeof(int*));
+    for (int i = 0; i < labirinto->lins; i++)  
+        labirinto->visitado[i] = malloc(labirinto->cols * sizeof(int));
+    
     // marcando tudo como nao visitado
     for (int i = 0; i < labirinto->lins; i++)
         for (int j = 0; j < labirinto->cols; j++)
-            visitado[i][j] = 0;
+            if (labirinto->lab[i][j] == ' ')
+                labirinto->visitado[i][j] = 0;
+    pilhaPush(pilha, pos);
 
-    while(!pilhaEhVazia) {
+    while(!pilhaEhVazia(pilha)) {
         int backt = 0;
-        pos = pilha->topo->item;
-        visitado[pos.x][pos.y] = 1;
-
+        pos = pilhaPop(pilha);
+        
+        labirinto->visitado[pos.x][pos.y] = 1;
+        labirinto->lab[pos.x][pos.y] = 'o';
+        
         // [WIN CONDITION]
-        if(pos.x == labirinto->lins - 1 && pos.y == labirinto->cols) {
+        if((pos.x == labirinto->lins - 2) && (pos.y == labirinto->cols - 1)) {
             vitoria(labirinto);
+            desalocarPilha(pilha);
             return 1;
         }
         
         // [DIREITA]
-        if (!visitado[pos.x][pos.y + 1] && caminhoValido(labirinto, pos.x, pos.y + 1)) {
+        if (!(labirinto->visitado[pos.x][pos.y + 1]) && (caminhoValido(labirinto, pos.x, pos.y + 1))) {
             pos.y++; backt++;
             pilhaPush(pilha, pos);
         }
         // [BAIXO]
-        if (!visitado[pos.x + 1][pos.y] && caminhoValido(labirinto, pos.x + 1, pos.y)) {
+        else if (!(labirinto->visitado[pos.x + 1][pos.y]) && (caminhoValido(labirinto, pos.x + 1, pos.y))) {
             pos.x++; backt++;
             pilhaPush(pilha, pos);
         }
         // [ESQUERDA]
-        if (!visitado[pos.x][pos.y - 1] && caminhoValido(labirinto, pos.x, pos.y - 1)) {
+        else if (!(labirinto->visitado[pos.x][pos.y - 1]) && (caminhoValido(labirinto, pos.x, pos.y - 1))) {
             pos.y--; backt++;
             pilhaPush(pilha, pos);
         }
         // [CIMA]
-        if (!visitado[pos.x - 1][pos.y] && caminhoValido(labirinto, pos.x - 1, pos.y)) {
+        else if (!(labirinto->visitado[pos.x - 1][pos.y]) && (caminhoValido(labirinto, pos.x - 1, pos.y))) {
             pos.x--; backt++;
             pilhaPush(pilha, pos);
         }
 
         if (backt == 0)
-            pilhaPop(pilha);
-
+            pos = pilhaPop(pilha);
     }
     
-    derrota(labirinto);
-    printf("\nEPIC FAIL!!\n\n");
+    if (flag == 1)
+        return 1;
+    printf("\nEPIC FAIL!\n\n");
+    printLab(labirinto);
+    printf("\n\nnúmero de passos: %d", contapassos(labirinto));
+    desalocarPilha(pilha);
     return 0;
 }
 
@@ -111,15 +122,22 @@ int pilhaEhVazia(Pilha *pilha) {
     return (pilha->tamanho == 0);
 }
 
+void desalocaVisitado(Labirinto *labirinto) {
+    for (int i = 0; i < labirinto->lins; i++)
+        free(labirinto->visitado[i]);
+    free(labirinto->visitado);
+}
+
 // [ADICIONA UM ELEMENTO AO TOPO] -- NOTA: "topo" não faz parte da lista, é como um clone;
 void pilhaPush(Pilha *pilha, Posicao pos) {
-    Celula *new = malloc(sizeof(Celula));
+    Celula *new = (Celula*)malloc(sizeof(Celula));
     if (new == NULL)
         printf("\nmemória insuficiente!!\n");
 
     new->item = pos;
     new->prox = NULL;
     pilha->tamanho++;
+
     if (pilha->cabeca == NULL) {
         pilha->topo = new;
         pilha->cabeca = new;
@@ -130,26 +148,31 @@ void pilhaPush(Pilha *pilha, Posicao pos) {
 }
 
 // [RETIRA O ELEMENTO DO TOPO]
-int pilhaPop(Pilha *pilha) {
+Posicao pilhaPop(Pilha *pilha) {
+    Posicao pilhaVazia;
+    pilhaVazia.x = -1; pilhaVazia.y = -1;
     if (pilhaEhVazia(pilha))
-        return 0;
+        return pilhaVazia;
     Celula *aux = pilha->cabeca;
-    while (aux->prox->prox != NULL) // para qdo estver uma posição anterior ao topo
-        aux = aux->prox;
-    // libero o topo e o atualizo
+    Posicao removed = pilha->topo->item;
+    if (pilha->tamanho > 1) {
+        while (aux->prox->prox != NULL) // para qdo estver uma posição anterior ao topo
+            aux = aux->prox;
+    } 
+    
     pilha->tamanho--;
     free(pilha->topo);
     pilha->topo = aux;
     aux->prox = NULL;
 
-    return 1;
+    return removed;
 }
 
 int contapassos(Labirinto *labirinto) {
     int cont = 0;
     for (int i = 0; i < labirinto->lins; i++)
         for (int j = 0; j < labirinto->cols; j++)
-            if(labirinto->lab[i][j] == '1')
+            if(labirinto->lab[i][j] == 'o')
                 cont++;
 
     return cont;
@@ -165,15 +188,9 @@ void printLab(Labirinto *labirinto) {
 }
 
 void vitoria(Labirinto *labirinto) {
-    printf("\nnúmero de passos: %d\n", contapassos(labirinto));
-    printf("\nCaminho de Saída:\n");
+    printf("\nCaminho de Saída:\n\n");
     printLab(labirinto);
-}
-
-void derrota(Labirinto *labirinto) {
-    printf("\nnúmero de passos: %d\n", contapassos(labirinto));
-    printLab(labirinto);
-    printf("\nEPIC FAIL!");
+    printf("\nNúmero de passos: %d", contapassos(labirinto));
 }
 
 // =======================================================================
@@ -182,9 +199,11 @@ void derrota(Labirinto *labirinto) {
 
 void desalocarPilha(Pilha *pilha) {
     Celula *aux = pilha->cabeca;
-    while(aux != NULL) {
+    Celula *aux2 = pilha->cabeca->prox;
+    while(aux2 != NULL) {
         free(aux);
-        aux = aux->prox;
+        aux = aux2;
+        aux2 = aux2->prox;
     }
 
     free(pilha);
