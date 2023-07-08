@@ -1,5 +1,6 @@
 #include "labirinto.h"
 #include "fila.h"
+#include "pilha.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,7 +21,6 @@ int main(void) {
     Labirinto *labirinto;
     Posicao *posicao;
     Percurso *percurso;
-    Fila fila;
     int x, y;  //Coordenadas iniciais
     int lins, cols;
     char opcao;
@@ -61,15 +61,21 @@ int main(void) {
           
         //break;
 
+        // Caso fila
         case 'f':
           leLabirinto(labirinto);
-          acharSaida_f(labirinto, fila);
+          acharSaida_f(labirinto);
           int cont = contador_f(labirinto);
-          if(cont > 0){
-            printf("\n%d\n", cont);
-            printLabirinto_f(labirinto);
-          }
+          printf("\n%d\n", cont);
+          printLabirinto_f(labirinto);
+        
         break;
+
+        //case 'p':
+          //leLabirinto(labirinto);
+          //acharSaidaPilha(labirinto);
+          //desalocaVisitado(labirinto);
+        //break;
     }
   
   //Desaloca TADs
